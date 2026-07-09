@@ -1,0 +1,34 @@
+name: Smart Contracts CI
+
+on:
+  push:
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/contracts.yml'
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/contracts.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Compile Smart Contracts
+      run: npm run contracts:build
+
+    - name: Run Test Suite
+      run: npm run contracts:test
