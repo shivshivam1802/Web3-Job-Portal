@@ -1,13 +1,287 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CLIENT
+  FREELANCER
+  AGENCY
+  ADMIN
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ContractStatus {
+  ACTIVE
+  IN_DISPUTE
+  COMPLETED
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  PENDING
+  FUNDED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  CANCELLED
+}
+
+enum PaymentType {
+  DEPOSIT
+  RELEASE
+  REFUND
+  DISPUTE_SPLIT
+}
+
+enum NotificationType {
+  JOB_ALERT
+  PROPOSAL_RECEIVED
+  CONTRACT_STARTED
+  MILESTONE_UPDATED
+  DISPUTE_RAISED
+  PAYMENT_RECEIVED
+  CHAT_MESSAGE
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  email              String             @unique
+  passwordHash       String?
+  username           String             @unique
+  walletAddress      String?            @unique
+  role               Role
+  kycStatus          KycStatus          @default(NONE)
+  is2FAEnabled       Boolean            @default(false)
+  twoFactorSecret    String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  
+  freelancerProfile  FreelancerProfile?
+  clientProfile      ClientProfile?
+  agencyOwned        Agency?            @relation("AgencyOwner")
+  agencyId           String?
+  agency             Agency?            @relation("AgencyMembers", fields: [agencyId], references: [id])
+  
+  proposals          Proposal[]
+  clientContracts    Contract[]         @relation("ClientContracts")
+  freelancerContracts Contract[]        @relation("FreelancerContracts")
+  reviewsWritten     Review[]           @relation("ReviewsWritten")
+  reviewsReceived    Review[]           @relation("ReviewsReceived")
+  notifications      Notification[]
+  messagesSent       Message[]          @relation("MessagesSent")
+  messagesReceived   Message[]          @relation("MessagesReceived")
+}
+
+model FreelancerProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  bio          String
+  skills       String[]
+  hourlyRate   Decimal
+  githubUrl    String?
+  portfolio    Json?    // Array of project details
+  experience   Json?    // Array of experience details
+  certificates Json?    // Array of certificates
+  resumeUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ClientProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName    String?
+  companyWebsite String?
+  location       String?
+  bio            String?
+  isVerified     Boolean  @default(false)
+  totalSpent     Decimal  @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Agency {
+  id         String   @id @default(uuid())
+  ownerId    String   @unique
+  owner      User     @relation("AgencyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name       String
+  website    String?
+  location   String?
+  bio        String?
+  isVerified Boolean  @default(false)
+  members    User[]   @relation("AgencyMembers")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Job {
+  id               String      @id @default(uuid())
+  clientId         String
+  title            String
+  description      String
+  category         String
+  tags             String[]
+  budget           Decimal
+  escrowAddress    String?
+  chainId          Int?
+  tokenAddress     String?
+  isMilestoneBased Boolean     @default(true)
+  status           JobStatus   @default(OPEN)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  
+  proposals        Proposal[]
+  contracts        Contract[]
+}
+
+model Proposal {
+  id           String         @id @default(uuid())
+  jobId        String
+  job          Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  freelancerId String
+  freelancer   User           @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+  bidAmount    Decimal
+  deliveryDays Int
+  coverLetter  String
+  attachments  String[]
+  status       ProposalStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Contract {
+  id            String         @id @default(uuid())
+  jobId         String
+  job           Job            @relation(fields: [jobId], references: [id])
+  clientId      String
+  client        User           @relation("ClientContracts", fields: [clientId], references: [id])
+  freelancerId  String
+  freelancer    User           @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+  totalBudget   Decimal
+  escrowAddress String
+  chainId       Int
+  tokenAddress  String?
+  status        ContractStatus @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  milestones    Milestone[]
+  dispute       Dispute?
+  reviews       Review[]
+  payments      Payment[]
+}
+
+model Milestone {
+  id                 String          @id @default(uuid())
+  contractId         String
+  contract           Contract        @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  index              Int
+  title              String
+  description        String
+  budget             Decimal
+  status             MilestoneStatus @default(PENDING)
+  submissionIpfsHash String?
+  feedback           String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+}
+
+model Dispute {
+  id                        String        @id @default(uuid())
+  contractId                String        @unique
+  contract                  Contract      @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  raisedById                String
+  reason                    String
+  status                    DisputeStatus @default(OPEN)
+  evidence                  Json?         // Logs of links/files
+  freelancerProposedRelease Decimal       @default(0)
+  clientProposedRefund      Decimal       @default(0)
+  mediatorVotes             Json?         // Voting distribution details
+  resolvedAt                DateTime?
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+}
+
+model Review {
+  id                 String   @id @default(uuid())
+  contractId         String
+  contract           Contract @relation(fields: [contractId], references: [id])
+  reviewerId         String
+  reviewer           User     @relation("ReviewsWritten", fields: [reviewerId], references: [id])
+  revieweeId         String
+  reviewee           User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  ratingOverall      Int
+  ratingCommunication Int
+  ratingSkill        Int
+  ratingTimeliness   Int
+  comment            String
+  createdAt          DateTime @default(now())
+}
+
+model Payment {
+  id           String      @id @default(uuid())
+  contractId   String
+  contract     Contract    @relation(fields: [contractId], references: [id])
+  sender       String
+  recipient    String
+  amount       Decimal
+  tokenAddress String?
+  txHash       String      @unique
+  type         PaymentType
+  createdAt    DateTime    @default(now())
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User     @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
+  content     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
