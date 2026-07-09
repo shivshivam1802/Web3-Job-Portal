@@ -10,9 +10,10 @@ import { ClientModule } from './client/client.module';
 import { JobModule } from './job/job.module';
 import { ProposalModule } from './proposal/proposal.module';
 import { ContractModule } from './contract/contract.module';
+import { IndexerModule } from './indexer/indexer.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule],
   controllers: [AppController],
   providers: [AppService],
 })
