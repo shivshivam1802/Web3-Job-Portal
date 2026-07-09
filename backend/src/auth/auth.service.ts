@@ -114,6 +114,33 @@ export class AuthService {
     }
   }
 
+  // OAuth User Validation (Find or Create)
+  async validateOAuthUser(email: string, username: string) {
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      let uniqueUsername = username;
+      const existingUsername = await this.prisma.user.findUnique({
+        where: { username },
+      });
+      if (existingUsername) {
+        uniqueUsername = `${username}_${Math.floor(Math.random() * 1000)}`;
+      }
+
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          username: uniqueUsername,
+          role: Role.FREELANCER,
+        },
+      });
+    }
+
+    return this.generateTokenResponse(user);
+  }
+
   private generateTokenResponse(user: { id: string; email: string; role: Role }) {
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
