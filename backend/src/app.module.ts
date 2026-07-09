@@ -15,10 +15,12 @@ import { PaymentModule } from './payment/payment.module';
 import { ReviewModule } from './review/review.module';
 import { DisputeModule } from './dispute/dispute.module';
 import { ChatGateway } from './chat/chat.gateway';
+import { ChatService } from './chat/chat.service';
+import { ChatController } from './chat/chat.controller';
 
 @Module({
   imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule],
-  controllers: [AppController],
-  providers: [AppService, ChatGateway],
+  controllers: [AppController, ChatController],
+  providers: [AppService, ChatGateway, ChatService],
 })
 export class AppModule {}
