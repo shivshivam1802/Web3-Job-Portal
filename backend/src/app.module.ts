@@ -12,9 +12,10 @@ import { ProposalModule } from './proposal/proposal.module';
 import { ContractModule } from './contract/contract.module';
 import { IndexerModule } from './indexer/indexer.module';
 import { PaymentModule } from './payment/payment.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule],
   controllers: [AppController],
   providers: [AppService],
 })
