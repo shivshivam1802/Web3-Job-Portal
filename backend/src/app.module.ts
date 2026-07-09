@@ -8,9 +8,10 @@ import { UserModule } from './user/user.module';
 import { FreelancerModule } from './freelancer/freelancer.module';
 import { ClientModule } from './client/client.module';
 import { JobModule } from './job/job.module';
+import { ProposalModule } from './proposal/proposal.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule],
   controllers: [AppController],
   providers: [AppService],
 })
