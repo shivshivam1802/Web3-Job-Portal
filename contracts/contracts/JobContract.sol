@@ -119,10 +119,10 @@ contract JobContract is Initializable, ReentrancyGuard {
         // Fund escrow
         if (paymentToken == address(0)) {
             require(msg.value == budget, "JobContract: Sent value does not match budget");
-            escrowContract.fundEscrow{value: budget}(jobId);
+            escrowContract.fundEscrow{value: budget}(jobId, budget);
         } else {
             require(msg.value == 0, "JobContract: Native currency not expected");
-            escrowContract.fundEscrow(jobId);
+            escrowContract.fundEscrow(jobId, budget);
         }
 
         // Update milestone status to Funded
@@ -195,7 +195,7 @@ contract JobContract is Initializable, ReentrancyGuard {
         escrowContract.disputeEscrow(jobId);
 
         // Register dispute logs
-        (, , , uint256 released, , ) = escrowContract.escrows(jobId);
+        (, , , , , uint256 released, ) = escrowContract.escrows(jobId);
         uint256 remaining = totalBudget - released;
         disputeContract.raiseDispute(jobId, client, freelancer, remaining);
 

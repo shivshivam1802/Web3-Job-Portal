@@ -100,7 +100,7 @@ describe("Escrow & Payment", function () {
     });
 
     it("Should allow client to fund native currency escrow", async function () {
-      await expect(escrow.connect(client).fundEscrow(ESCROW_ID_1, { value: JOB_BUDGET }))
+      await expect(escrow.connect(client).fundEscrow(ESCROW_ID_1, JOB_BUDGET, { value: JOB_BUDGET }))
         .to.emit(escrow, "EscrowFunded")
         .withArgs(ESCROW_ID_1, JOB_BUDGET);
 
@@ -110,13 +110,13 @@ describe("Escrow & Payment", function () {
 
     it("Should revert if funding with incorrect value", async function () {
       await expect(
-        escrow.connect(client).fundEscrow(ESCROW_ID_1, { value: ethers.parseEther("5") })
+        escrow.connect(client).fundEscrow(ESCROW_ID_1, JOB_BUDGET, { value: ethers.parseEther("5") })
       ).to.be.revertedWith("Escrow: Incorrect value sent");
     });
 
     describe("Funded Actions", function () {
       beforeEach(async function () {
-        await escrow.connect(client).fundEscrow(ESCROW_ID_1, { value: JOB_BUDGET });
+        await escrow.connect(client).fundEscrow(ESCROW_ID_1, JOB_BUDGET, { value: JOB_BUDGET });
       });
 
       it("Should allow authorized caller to release funds (with fee deduction)", async function () {
@@ -202,7 +202,7 @@ describe("Escrow & Payment", function () {
     });
 
     it("Should allow client to fund ERC20 escrow", async function () {
-      await expect(escrow.connect(client).fundEscrow(ESCROW_ID_2))
+      await expect(escrow.connect(client).fundEscrow(ESCROW_ID_2, JOB_BUDGET))
         .to.emit(escrow, "EscrowFunded")
         .withArgs(ESCROW_ID_2, JOB_BUDGET);
 
@@ -211,7 +211,7 @@ describe("Escrow & Payment", function () {
 
     describe("Funded Actions (ERC20)", function () {
       beforeEach(async function () {
-        await escrow.connect(client).fundEscrow(ESCROW_ID_2);
+        await escrow.connect(client).fundEscrow(ESCROW_ID_2, JOB_BUDGET);
       });
 
       it("Should allow authorized caller to release ERC20 funds", async function () {

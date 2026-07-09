@@ -23,6 +23,7 @@ contract Escrow is Ownable2Step, ReentrancyGuard, Pausable {
         address freelancer;
         address token; // address(0) for native currency
         uint256 totalAmount;
+        uint256 fundedAmount;
         uint256 releasedAmount;
         EscrowState state;
     }
@@ -100,6 +101,7 @@ contract Escrow is Ownable2Step, ReentrancyGuard, Pausable {
             freelancer: freelancer,
             token: token,
             totalAmount: amount,
+            fundedAmount: 0,
             releasedAmount: 0,
             state: EscrowState.Created
         });
@@ -112,21 +114,23 @@ contract Escrow is Ownable2Step, ReentrancyGuard, Pausable {
      * For native currency, msg.value must match the required amount.
      * For ERC20 tokens, the tokens are transferred from msg.sender to this contract.
      */
-    function fundEscrow(bytes32 escrowId) external payable nonReentrant whenNotPaused {
+    function fundEscrow(bytes32 escrowId, uint256 amount) external payable nonReentrant whenNotPaused {
         EscrowInfo storage escrow = escrows[escrowId];
         require(escrow.client != address(0), "Escrow: Escrow does not exist");
-        require(escrow.state == EscrowState.Created, "Escrow: Already funded or closed");
+        require(escrow.state == EscrowState.Created || escrow.state == EscrowState.Funded, "Escrow: Already funded or closed");
+        require(escrow.fundedAmount + amount <= escrow.totalAmount, "Escrow: Funding exceeds total budget");
 
         escrow.state = EscrowState.Funded;
+        escrow.fundedAmount += amount;
 
         if (escrow.token == address(0)) {
-            require(msg.value == escrow.totalAmount, "Escrow: Incorrect value sent");
+            require(msg.value == amount, "Escrow: Incorrect value sent");
         } else {
             require(msg.value == 0, "Escrow: Native value not expected");
-            IERC20(escrow.token).safeTransferFrom(msg.sender, address(this), escrow.totalAmount);
+            IERC20(escrow.token).safeTransferFrom(msg.sender, address(this), amount);
         }
 
-        emit EscrowFunded(escrowId, escrow.totalAmount);
+        emit EscrowFunded(escrowId, amount);
     }
 
     /**
@@ -140,7 +144,7 @@ contract Escrow is Ownable2Step, ReentrancyGuard, Pausable {
     ) external onlyAuthorized nonReentrant whenNotPaused {
         EscrowInfo storage escrow = escrows[escrowId];
         require(escrow.state == EscrowState.Funded || escrow.state == EscrowState.Disputed, "Escrow: Invalid escrow state");
-        require(escrow.releasedAmount + amount <= escrow.totalAmount, "Escrow: Release amount exceeds total");
+        require(escrow.releasedAmount + amount <= escrow.fundedAmount, "Escrow: Release amount exceeds funded amount");
 
         escrow.releasedAmount += amount;
         if (escrow.releasedAmount == escrow.totalAmount) {
@@ -177,10 +181,10 @@ contract Escrow is Ownable2Step, ReentrancyGuard, Pausable {
         EscrowInfo storage escrow = escrows[escrowId];
         require(escrow.state == EscrowState.Funded || escrow.state == EscrowState.Disputed, "Escrow: Invalid escrow state");
         
-        uint256 remaining = escrow.totalAmount - escrow.releasedAmount;
+        uint256 remaining = escrow.fundedAmount - escrow.releasedAmount;
         require(remaining > 0, "Escrow: Nothing left to refund");
 
-        escrow.releasedAmount = escrow.totalAmount;
+        escrow.releasedAmount = escrow.fundedAmount;
         escrow.state = EscrowState.Refunded;
 
         if (escrow.token == address(0)) {
@@ -214,10 +218,10 @@ contract Escrow is Ownable2Step, ReentrancyGuard, Pausable {
         EscrowInfo storage escrow = escrows[escrowId];
         require(escrow.state == EscrowState.Disputed, "Escrow: Escrow not in dispute state");
 
-        uint256 remaining = escrow.totalAmount - escrow.releasedAmount;
+        uint256 remaining = escrow.fundedAmount - escrow.releasedAmount;
         require(freelancerAmount + clientAmount == remaining, "Escrow: Invalid split sum");
 
-        escrow.releasedAmount = escrow.totalAmount;
+        escrow.releasedAmount = escrow.fundedAmount;
         escrow.state = EscrowState.Released;
 
         if (freelancerAmount > 0) {
