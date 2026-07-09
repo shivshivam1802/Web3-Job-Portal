@@ -115,4 +115,58 @@ export class JobService {
       },
     });
   }
+
+  async searchJobs(filters: {
+    query?: string;
+    category?: string;
+    tag?: string;
+    minBudget?: number;
+    maxBudget?: number;
+    chainId?: number;
+    status?: JobStatus;
+  }) {
+    const where: any = {};
+
+    if (filters.status) {
+      where.status = filters.status;
+    } else {
+      where.status = JobStatus.OPEN;
+    }
+
+    if (filters.category) {
+      where.category = { equals: filters.category, mode: 'insensitive' };
+    }
+
+    if (filters.tag) {
+      where.tags = { has: filters.tag };
+    }
+
+    if (filters.chainId) {
+      where.chainId = filters.chainId;
+    }
+
+    if (filters.minBudget !== undefined || filters.maxBudget !== undefined) {
+      where.budget = {};
+      if (filters.minBudget !== undefined) {
+        where.budget.gte = filters.minBudget;
+      }
+      if (filters.maxBudget !== undefined) {
+        where.budget.lte = filters.maxBudget;
+      }
+    }
+
+    if (filters.query) {
+      where.OR = [
+        { title: { contains: filters.query, mode: 'insensitive' } },
+        { description: { contains: filters.query, mode: 'insensitive' } },
+      ];
+    }
+
+    return this.prisma.job.findMany({
+      where,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }
