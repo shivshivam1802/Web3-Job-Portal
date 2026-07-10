@@ -165,6 +165,9 @@ model Job {
   
   proposals        Proposal[]
   contracts        Contract[]
+
+  @@index([clientId])
+  @@index([status])
 }
 
 model Proposal {
@@ -180,6 +183,9 @@ model Proposal {
   status       ProposalStatus @default(PENDING)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+
+  @@index([jobId])
+  @@index([freelancerId])
 }
 
 model Contract {
@@ -202,6 +208,11 @@ model Contract {
   dispute       Dispute?
   reviews       Review[]
   payments      Payment[]
+
+  @@index([jobId])
+  @@index([clientId])
+  @@index([freelancerId])
+  @@index([status])
 }
 
 model Milestone {
@@ -217,6 +228,8 @@ model Milestone {
   feedback           String?
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
+
+  @@index([contractId])
 }
 
 model Dispute {
@@ -262,6 +275,8 @@ model Payment {
   txHash       String      @unique
   type         PaymentType
   createdAt    DateTime    @default(now())
+
+  @@index([contractId])
 }
 
 model Notification {
@@ -273,6 +288,9 @@ model Notification {
   type      NotificationType
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
 }
 
 model Message {
@@ -284,4 +302,6 @@ model Message {
   content     String
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([senderId, recipientId])
 }
