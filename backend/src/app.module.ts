@@ -17,9 +17,10 @@ import { DisputeModule } from './dispute/dispute.module';
 import { ChatGateway } from './chat/chat.gateway';
 import { ChatService } from './chat/chat.service';
 import { ChatController } from './chat/chat.controller';
+import { IpfsModule } from './ipfs/ipfs.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, IpfsModule],
   controllers: [AppController, ChatController],
   providers: [AppService, ChatGateway, ChatService],
 })
