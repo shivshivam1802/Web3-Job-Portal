@@ -18,7 +18,7 @@ export class IpfsService {
     const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
     const formData = new FormData();
     
-    const blob = new Blob([fileBuffer]);
+    const blob = new Blob([new Uint8Array(fileBuffer)]);
     formData.append('file', blob, fileName);
 
     const headers: Record<string, string> = {};
