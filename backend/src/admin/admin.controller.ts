@@ -49,6 +49,6 @@ export class AdminController {
     @Body('freelancerShare') freelancerShare: number,
     @Body('clientShare') clientShare: number,
   ) {
-    return this.adminService.resolveDispute(user.role, id, freelancerShare, clientShare);
+    return this.adminService.resolveDispute(user.role, user.id, id, freelancerShare, clientShare);
   }
 }

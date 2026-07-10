@@ -147,7 +147,6 @@ export class DisputeService {
     const dispute = await this.findOne(id);
 
     return this.prisma.$transaction(async (tx) => {
-      // Update dispute status
       const updatedDispute = await tx.dispute.update({
         where: { id },
         data: {
@@ -156,13 +155,74 @@ export class DisputeService {
         },
       });
 
-      // Reset contract status to ACTIVE/COMPLETED depending on resolution parameters
       await tx.contract.update({
         where: { id: dispute.contractId },
         data: { status: ContractStatus.COMPLETED },
       });
 
       return updatedDispute;
+    });
+  }
+
+  async approveAdminResolution(
+    id: string,
+    adminId: string,
+    freelancerShare: number,
+    clientShare: number,
+  ) {
+    const dispute = await this.findOne(id);
+    if (dispute.status !== DisputeStatus.OPEN) {
+      throw new BadRequestException('Dispute is already resolved');
+    }
+
+    const currentEvidence = (dispute.evidence as any[]) || [];
+    
+    const alreadyApproved = currentEvidence.some(
+      (item) => item.adminApprovalBy === adminId
+    );
+    if (alreadyApproved) {
+      throw new BadRequestException('You have already approved a resolution split for this dispute');
+    }
+
+    const updatedEvidence = [
+      ...currentEvidence,
+      {
+        adminApprovalBy: adminId,
+        freelancerShare,
+        clientShare,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+
+    const adminApprovals = updatedEvidence.filter((item) => item.adminApprovalBy !== undefined);
+    
+    if (adminApprovals.length >= 2) {
+      return this.prisma.$transaction(async (tx) => {
+        const updatedDispute = await tx.dispute.update({
+          where: { id },
+          data: {
+            status: DisputeStatus.RESOLVED,
+            freelancerProposedRelease: freelancerShare,
+            clientProposedRefund: clientShare,
+            resolvedAt: new Date(),
+            evidence: updatedEvidence,
+          },
+        });
+
+        await tx.contract.update({
+          where: { id: dispute.contractId },
+          data: { status: ContractStatus.COMPLETED },
+        });
+
+        return updatedDispute;
+      });
+    }
+
+    return this.prisma.dispute.update({
+      where: { id },
+      data: {
+        evidence: updatedEvidence,
+      },
     });
   }
 }

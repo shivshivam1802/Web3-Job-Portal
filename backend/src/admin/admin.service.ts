@@ -1,10 +1,14 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { DisputeService } from '../dispute/dispute.service';
 import { Role, JobStatus, DisputeStatus, KycStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private disputeService: DisputeService,
+  ) {}
 
   // Helper check for admin role
   private checkAdmin(role: Role) {
@@ -60,7 +64,6 @@ export class AdminService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // Set KYC status to REJECTED or disable/deactivate user (e.g. modify username/email or flag)
     return this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -88,42 +91,17 @@ export class AdminService {
 
   async resolveDispute(
     adminRole: Role,
+    adminUserId: string,
     disputeId: string,
     freelancerShare: number,
     clientShare: number,
   ) {
     this.checkAdmin(adminRole);
-
-    const dispute = await this.prisma.dispute.findUnique({
-      where: { id: disputeId },
-      include: { contract: true },
-    });
-
-    if (!dispute) {
-      throw new NotFoundException(`Dispute with ID ${disputeId} not found`);
-    }
-
-    return this.prisma.$transaction(async (tx) => {
-      // 1. Resolve the dispute
-      const updatedDispute = await tx.dispute.update({
-        where: { id: disputeId },
-        data: {
-          status: DisputeStatus.RESOLVED,
-          freelancerProposedRelease: freelancerShare,
-          clientProposedRefund: clientShare,
-          resolvedAt: new Date(),
-        },
-      });
-
-      // 2. Set contract as completed
-      await tx.contract.update({
-        where: { id: dispute.contractId },
-        data: {
-          status: 'COMPLETED',
-        },
-      });
-
-      return updatedDispute;
-    });
+    return this.disputeService.approveAdminResolution(
+      disputeId,
+      adminUserId,
+      freelancerShare,
+      clientShare,
+    );
   }
 }
