@@ -18,9 +18,10 @@ import { ChatModule } from './chat/chat.module';
 import { IpfsModule } from './ipfs/ipfs.module';
 import { NotificationModule } from './notification/notification.module';
 import { AiModule } from './ai/ai.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule, AiModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule, AiModule, AdminModule],
   controllers: [AppController],
   providers: [AppService],
 })
