@@ -14,14 +14,13 @@ import { IndexerModule } from './indexer/indexer.module';
 import { PaymentModule } from './payment/payment.module';
 import { ReviewModule } from './review/review.module';
 import { DisputeModule } from './dispute/dispute.module';
-import { ChatGateway } from './chat/chat.gateway';
-import { ChatService } from './chat/chat.service';
-import { ChatController } from './chat/chat.controller';
+import { ChatModule } from './chat/chat.module';
 import { IpfsModule } from './ipfs/ipfs.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, IpfsModule],
-  controllers: [AppController, ChatController],
-  providers: [AppService, ChatGateway, ChatService],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
