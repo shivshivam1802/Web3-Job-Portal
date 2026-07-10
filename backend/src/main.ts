@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -29,8 +30,17 @@ async function bootstrap() {
     }),
   });
 
+  // Enable helmet middleware for secure headers
+  app.use(helmet({
+    contentSecurityPolicy: false, // Set to false to prevent Swagger UI stylesheet blocks
+  }));
+
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3000', 'http://localhost:3001'];
+
   app.enableCors({
-    origin: '*',
+    origin: allowedOrigins,
     credentials: true,
   });
 
