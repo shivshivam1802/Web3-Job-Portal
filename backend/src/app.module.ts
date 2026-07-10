@@ -22,9 +22,10 @@ import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RateLimiterGuard } from './redis/rate-limiter.guard';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule, AiModule, AdminModule, AnalyticsModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule, AiModule, AdminModule, AnalyticsModule, HealthModule],
   controllers: [AppController],
   providers: [
     AppService,
