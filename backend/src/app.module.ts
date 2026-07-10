@@ -19,9 +19,10 @@ import { IpfsModule } from './ipfs/ipfs.module';
 import { NotificationModule } from './notification/notification.module';
 import { AiModule } from './ai/ai.module';
 import { AdminModule } from './admin/admin.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule, AiModule, AdminModule],
+  imports: [PrismaModule, RedisModule, AuthModule, UserModule, FreelancerModule, ClientModule, JobModule, ProposalModule, ContractModule, IndexerModule, PaymentModule, ReviewModule, DisputeModule, ChatModule, IpfsModule, NotificationModule, AiModule, AdminModule, AnalyticsModule],
   controllers: [AppController],
   providers: [AppService],
 })
