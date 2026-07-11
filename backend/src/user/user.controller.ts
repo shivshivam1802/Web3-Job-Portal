@@ -2,7 +2,7 @@ import { Controller, Get, Put, Post, Body, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { KycStatus } from '@prisma/client';
+import { KycStatus, Role } from '@prisma/client';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -20,8 +20,9 @@ export class UserController {
     @Body('email') email?: string,
     @Body('username') username?: string,
     @Body('walletAddress') walletAddress?: string,
+    @Body('role') role?: Role,
   ) {
-    return this.userService.updateProfile(user.id, { email, username, walletAddress });
+    return this.userService.updateProfile(user.id, { email, username, walletAddress, role });
   }
 
   @Post('kyc')

@@ -22,7 +22,7 @@ export class UserService {
     return user;
   }
 
-  async updateProfile(id: string, data: { email?: string; username?: string; walletAddress?: string }) {
+  async updateProfile(id: string, data: { email?: string; username?: string; walletAddress?: string; role?: Role }) {
     // Check uniqueness if email or username is changing
     if (data.email) {
       const emailExists = await this.prisma.user.findFirst({
@@ -54,8 +54,10 @@ export class UserService {
     return this.prisma.user.update({
       where: { id },
       data: {
-        ...data,
+        email: data.email,
+        username: data.username,
         walletAddress: data.walletAddress ? data.walletAddress.toLowerCase() : undefined,
+        role: data.role,
       },
     });
   }
