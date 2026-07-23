@@ -317,3 +317,4 @@ Activity on 2026-07-23 18:36:25 +0530 - perf: reduce bundle size by optimizing d
 Activity on 2026-07-23 18:36:25 +0530 - feat: add search filtering by salary range - ID: 1292
 Activity on 2026-07-23 18:36:25 +0530 - fix: handle timeout error during backend API calls - ID: 7285
 Activity on 2026-07-23 18:36:45 +0530 - fix: handle timeout error during backend API calls - ID: 1550
+Activity on 2026-07-23 18:36:45 +0530 - fix: correct pagination active page highlight issue - ID: 652
