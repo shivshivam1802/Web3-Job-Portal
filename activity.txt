@@ -292,3 +292,4 @@ Activity on 2026-07-23 18:33:11 +0530 - fix: resolve race condition in state upd
 Activity on 2026-07-23 18:33:29 +0530 - perf: reduce bundle size by optimizing dependency imports - ID: 9682
 Activity on 2026-07-23 18:33:30 +0530 - refactor: migrate legacy components to functional components - ID: 3038
 Activity on 2026-07-23 18:33:30 +0530 - refactor: migrate legacy components to functional components - ID: 8485
+Activity on 2026-07-23 18:33:47 +0530 - feat: add search filtering by salary range - ID: 617
